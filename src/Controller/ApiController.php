@@ -23,7 +23,6 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/get-price', methods: ['GET'])]
-    #[Route('/api/orders', name: 'get_orders', methods: ['GET'])]
 
     public function getPrice(Request $request): JsonResponse
     {
@@ -31,9 +30,6 @@ class ApiController extends AbstractController
         $collection = $request->query->get('collection');
         $article = $request->query->get('article');
 
-        // if ($factory !== 'cobsa' || $collection !== 'manual' || $article !== 'manu7530esbm-manualesmeralda7-5x30') {
-        //     return new JsonResponse(['error' => 'Invalid parameters'], 400);
-        // }
         if (!$factory || !$collection || !$article) {
             return new JsonResponse(['error' => 'Missing parameters: factory, collection, and article are required'], 400);
         }
@@ -75,17 +71,49 @@ class ApiController extends AbstractController
         }
     }
 
-//     public function getOrders(Request $request): JsonResponse
-// {
-//     $page = $request->query->getInt('page', 1);
-//     $limit = $request->query->getInt('limit', 10);
+    #[Route('/api/orders/grouped', name: 'get_grouped_orders', methods: ['GET'])]
 
-//     // $repository = $this->getDoctrine()->getRepository(Order::class);
-//     // Récupérer le repository de l'entité Order
-//     $repository = $entityManager->getRepository(Order::class);
-//     $orders = $repository->findBy([], null, $limit, ($page - 1) * $limit);
+    public function getGroupedOrders(Request $request): JsonResponse
+    {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $perPage = max(1, (int) $request->query->get('perPage', 10));
 
-//     return new JsonResponse($orders);
-// }
+        // Simulez un appel pour obtenir des données depuis l'URL
+        $url = 'https://tile.expert/fr/tile/cobsa/manual';
+        $client = new \GuzzleHttp\Client();
+
+        try {
+            $response = $client->get($url);
+            $htmlContent = $response->getBody()->getContents();
+
+            // Utilisez une bibliothèque comme DOMDocument ou Symfony DomCrawler pour analyser l'HTML
+            $crawler = new \Symfony\Component\DomCrawler\Crawler($htmlContent);
+
+            // Analysez les prix et regroupez-les
+            $priceBlocks = $crawler->filter('.wrap-price-block .js-full-price-block li')->each(function ($node) {
+                return [
+                    'pricePerSquareMeter' => $node->filter('.price-per-measure-container .js-price-tag')->attr('data-price-raw'),
+                    'pricePerBox' => $node->filter('.price-per-box-container span')->text(),
+                    'currency' => '€',
+                ];
+            });
+
+            // Paginer les résultats
+            $totalItems = count($priceBlocks);
+            $totalPages = ceil($totalItems / $perPage);
+            $data = array_slice($priceBlocks, ($page - 1) * $perPage, $perPage);
+
+            return new JsonResponse([
+                'page' => $page,
+                'perPage' => $perPage,
+                'totalPages' => $totalPages,
+                'totalItems' => $totalItems,
+                'data' => $data,
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Failed to fetch or process data'], 500);
+        }
+    }
 
 }
