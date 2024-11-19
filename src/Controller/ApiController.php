@@ -31,8 +31,11 @@ class ApiController extends AbstractController
         $collection = $request->query->get('collection');
         $article = $request->query->get('article');
 
-        if ($factory !== 'cobsa' || $collection !== 'manual' || $article !== 'manu7530whbm-manualwhite7-5x30') {
-            return new JsonResponse(['error' => 'Invalid parameters'], 400);
+        // if ($factory !== 'cobsa' || $collection !== 'manual' || $article !== 'manu7530esbm-manualesmeralda7-5x30') {
+        //     return new JsonResponse(['error' => 'Invalid parameters'], 400);
+        // }
+        if (!$factory || !$collection || !$article) {
+            return new JsonResponse(['error' => 'Missing parameters: factory, collection, and article are required'], 400);
         }
 
         $url = "https://tile.expert/fr/tile/$factory/$collection/a/$article";
