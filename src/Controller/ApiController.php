@@ -2,28 +2,15 @@
 
 namespace App\Controller;
 
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ApiController extends AbstractController
 {
 
-    private HttpClientInterface $httpClient;
-    private LoggerInterface $logger;
-
-    public function __construct(HttpClientInterface $httpClient, LoggerInterface $logger)
-    {
-        $this->httpClient = $httpClient;
-        $this->logger = $logger;
-
-    }
-
     #[Route('/api/get-price', methods: ['GET'])]
-
     public function getPrice(Request $request): JsonResponse
     {
         $factory = $request->query->get('factory');
@@ -72,29 +59,24 @@ class ApiController extends AbstractController
     }
 
     #[Route('/api/orders/grouped', name: 'get_grouped_orders', methods: ['GET'])]
-
     public function getGroupedOrders(Request $request): JsonResponse
     {
         $page = max(1, (int) $request->query->get('page', 1));
         $perPage = max(1, (int) $request->query->get('perPage', 10));
 
-        // Simulez un appel pour obtenir des données depuis l'URL
-        $url = 'https://tile.expert/fr/tile/cobsa/manual';
-        $client = new \GuzzleHttp\Client();
+        // Initialiser Panther pour récupérer une version rendue de la page
+        $client = \Symfony\Component\Panther\Client::createChromeClient();
 
         try {
-            $response = $client->get($url);
-            $htmlContent = $response->getBody()->getContents();
+            // Charger la page
+            $crawler = $client->request('GET', 'https://tile.expert/fr/tile/cobsa/manual');
 
-            // Utilisez une bibliothèque comme DOMDocument ou Symfony DomCrawler pour analyser l'HTML
-            $crawler = new \Symfony\Component\DomCrawler\Crawler($htmlContent);
-
-            // Analysez les prix et regroupez-les
-            $priceBlocks = $crawler->filter('.wrap-price-block .js-full-price-block li')->each(function ($node) {
+            // Extraire les blocs de prix
+            $priceBlocks = $crawler->filter('.js-full-price-block li')->each(function ($node) {
                 return [
-                    'pricePerSquareMeter' => $node->filter('.price-per-measure-container .js-price-tag')->attr('data-price-raw'),
-                    'pricePerBox' => $node->filter('.price-per-box-container span')->text(),
-                    'currency' => '€',
+                    'priceRaw' => $node->filter('.js-price-tag')->attr('data-price-raw'),
+                    'priceFormatted' => $node->filter('.js-price-tag')->text(),
+                    'currency' => '€/m²',
                 ];
             });
 
@@ -110,9 +92,8 @@ class ApiController extends AbstractController
                 'totalItems' => $totalItems,
                 'data' => $data,
             ]);
-
         } catch (\Exception $e) {
-            return new JsonResponse(['error' => 'Failed to fetch or process data'], 500);
+            return new JsonResponse(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
 
