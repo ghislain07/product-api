@@ -97,4 +97,42 @@ class ApiController extends AbstractController
         }
     }
 
+    #[Route('/api/soap/send', name: 'send_data_to_soap', methods: ['POST'])]
+    public function sendDataToSoap(Request $request): JsonResponse
+    {
+        // Étape 1 : Extraire les données (Vous avez déjà la logique pour obtenir les prix)
+        $data = [
+            'pricePerSquareMeter' => 40.5,
+            'currency' => 'EUR',
+            'date' => (new \DateTime())->format('Y-m-d H:i:s'),
+        ];
+
+        // Étape 2 : Envoyer les données au service SOAP
+        $wsdl = "https://tile.expert/fr/tile/cobsa/manual";
+
+        try {
+            $client = new \SoapClient($wsdl, [
+                'trace' => true,
+                'exceptions' => true,
+            ]);
+
+            // Appel de la méthode SOAP
+            $response = $client->__soapCall('CreateOrder', [
+                'parameters' => $data,
+            ]);
+
+            // Retourner la réponse
+            return new JsonResponse([
+                'status' => 'success',
+                'response' => $response,
+            ]);
+        } catch (\SoapFault $e) {
+            // Gérer les erreurs
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
