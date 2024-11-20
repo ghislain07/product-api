@@ -1,19 +1,19 @@
 # product-api
 
-* Obtenir le prix d'un article (/api/get-price)
-    - Permet de récupérer le prix d'un article spécifique à partir d'un site externe.
-    - Prend en paramètres factory, collection, et article dans l'URL.
-    - Renvoie le prix brut et formaté de l'article.
+* Get the price of an item (/api/get-price)
+    - Retrieves the price of a specific item from d'un site externe.
+    - Takes factory, collection and article parameters in URL.
+    - Returns the gross and formatted price of the item.
 
-* Obtenir des commandes groupées (/api/orders/grouped)
-    - Permet de récupérer des commandes groupées depuis un site externe.
-    - Supporte la pagination via les paramètres page et perPage.
-    - Renvoie une liste paginée de prix et d'informations associées.
+* Get grouped orders (/api/orders/grouped)
+    - Retrieves grouped orders from an external site.
+    - Supports pagination via page and perPage parameters.
+    - Returns a paginated list of prices and related information.
 
-* Envoyer des données à un service SOAP (/api/soap/send)
-    - Envoie des données au service SOAP pour créer une commande.
-    - Prend des données au format JSON dans le corps de la requête.
+* Send data to a SOAP service (/api/soap/send)
+    - Sends data to the SOAP service to create a command.
+    - Takes data in JSON format from the request body.
     
-* Créer une commande dans la base de données (via OrderService)
-    - Crée une commande dans la base de données en utilisant Doctrine ORM.
-    - Le service OrderService s'occupe de la logique de création de commande, y compris le calcul du prix total.
+* Create an order in the database (via OrderService)
+    - Creates an order in the database using Doctrine ORM.
+    - The OrderService handles the order creation logic, including total price calculation.

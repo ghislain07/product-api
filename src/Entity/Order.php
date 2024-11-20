@@ -1,6 +1,5 @@
 <?php
 
-// src/Entity/Order.php
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
@@ -44,28 +43,24 @@ class Order
         return $this;
     }
 
-    // Setter pour items
     public function setItems(array $items): self
     {
         $this->items = $items;
         return $this;
     }
 
-    // Setter pour totalPrice
     public function setTotalPrice(float $totalPrice): self
     {
         $this->totalPrice = $totalPrice;
         return $this;
     }
 
-    // Setter pour createdAt
     public function setCreatedAt(\DateTime $createdAt): self
     {
         $this->createdAt = $createdAt;
         return $this;
     }
 
-    // Getters si nécessaire
     public function getId(): ?int
     {
         return $this->id;

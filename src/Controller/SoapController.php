@@ -1,5 +1,4 @@
 <?php
-// src/Controller/SoapController.php
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,7 +10,6 @@ class SoapController extends AbstractController
 {
     public function sendSoapRequest(Request $request)
     {
-        // Données SOAP à envoyer
         $soapData = [
             'customerId' => '12345',
             'items' => [
@@ -20,12 +18,10 @@ class SoapController extends AbstractController
             ],
         ];
 
-        // Créer la requête SOAP en XML
         $soapXml = $this->generateSoapXml($soapData);
 
         $soapUrl = 'http://example.com/soap-service';
 
-        // Utilisation de HttpClient pour envoyer la requête SOAP
         $client = HttpClient::create();
         $response = $client->request('POST', $soapUrl, [
             'headers' => [
@@ -34,10 +30,8 @@ class SoapController extends AbstractController
             'body' => $soapXml,
         ]);
 
-        // Vérifiez la réponse du service SOAP
         $responseContent = $response->getContent();
 
-        // Vous pouvez retourner la réponse sous forme de JSON ou effectuer des actions en fonction du résultat
         return new JsonResponse([
             'status' => 'success',
             'message' => 'SOAP request sent successfully',
@@ -45,16 +39,13 @@ class SoapController extends AbstractController
         ]);
     }
 
-    // Générer le XML SOAP à partir des données
     private function generateSoapXml($data)
     {
-        // Construire le XML pour la requête SOAP
         $xml = new \SimpleXMLElement('<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:web="http://www.example.com/webservice"/>');
 
         $body = $xml->addChild('soapenv:Body');
         $createOrderRequest = $body->addChild('web:CreateOrderRequest');
 
-        // Ajouter les éléments de la commande
         $createOrderRequest->addChild('customerId', $data['customerId']);
         $items = $createOrderRequest->addChild('items');
 
@@ -64,7 +55,6 @@ class SoapController extends AbstractController
             $itemElement->addChild('price', $item['price']);
         }
 
-        // Retourner le XML en tant que chaîne
         return $xml->asXML();
     }
 

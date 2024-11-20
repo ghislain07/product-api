@@ -15,7 +15,6 @@ class OrderService
 
     public function createOrder($data)
     {
-        // Logique pour créer et enregistrer la commande dans la base de données
         $order = new Order();
         $order->setCustomerId($data['customerId']);
         $order->setItems($data['items']);
@@ -39,7 +38,6 @@ class OrderService
 
     private function getProductPrice($productId)
     {
-        // Logique pour obtenir le prix du produit à partir de la base de données
-        return 40.5; // Exemple
+        return 40.5;
     }
 }
